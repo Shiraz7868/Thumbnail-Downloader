@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced YouTube Thumbnail Downloader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS with UI/UX improvements, animations, and responsiveness */
+        :root {
+            --primary-color: #ff0000; /* YouTube Red */
+            --secondary-color: #282828; /* YouTube Dark Grey */
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted-color: #aaaaaa;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--surface-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            max-width: 550px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header img {
+            width: 60px; /* Increased size slightly for the new logo */
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted-color);
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        #youtubeUrl {
+            width: 100%;
+            padding: 15px 20px;
+            padding-right: 140px; /* Space for the button */
+            background: var(--background-color);
+            border: 1px solid #444;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: border-color 0.3s ease;
+        }
+
+        #youtubeUrl:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        #getThumbnailBtn {
+            position: absolute;
+            right: 7px;
+            top: 7px;
+            bottom: 7px;
+            padding: 0 25px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        #getThumbnailBtn:hover {
+            background-color: #d60000;
+        }
+
+        #getThumbnailBtn:active {
+            transform: scale(0.98);
+        }
+        
+        #getThumbnailBtn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        #resultContainer {
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .thumbnail-card {
+            width: 100%;
+            display: none; /* Hidden by default */
+            animation: resultFadeIn 0.5s ease-out;
+        }
+
+        @keyframes resultFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        #thumbnailImage {
+            max-width: 100%;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--success-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #1a9649;
+        }
+        
+        .download-btn:active {
+             transform: scale(0.98);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .error { background-color: rgba(239, 68, 68, 0.2); color: var(--error-color); }
+        .info { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--text-color);
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design for Mobile */
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            .container { padding: 20px; }
+            h1 { font-size: 1.5rem; }
+            p.subtitle { font-size: 0.9rem; margin-bottom: 20px; }
+            #youtubeUrl { padding: 12px 15px; padding-right: 110px; }
+            #getThumbnailBtn { font-size: 0.9rem; padding: 0 15px; }
+            .download-btn { font-size: 1rem; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <!-- THIS IS THE UPDATED LINE WITH YOUR LOGO -->
+            <img src="https://i.freeimage.host/2024/05/21/FC2l1oX.png" alt="YouTube Icon">
+            <h1>Thumbnail Downloader </h1>
+            <p class="subtitle">Instantly download high-quality YouTube thumbnails.</p>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here...">
+            <button id="getThumbnailBtn">Get Image</button>
+        </div>
+
+        <div id="resultContainer">
+            <!-- Loader, thumbnail, or error message will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // JavaScript with direct download functionality and better UX
+        const urlInput = document.getElementById('youtubeUrl');
+        const getBtn = document.getElementById('getThumbnailBtn');
+        const resultContainer = document.getElementById('resultContainer');
+
+        // Function to show a loading spinner
+        function showLoader() {
+            getBtn.disabled = true;
+            getBtn.textContent = 'Fetching...';
+            resultContainer.innerHTML = '<div class="loader"></div>';
+        }
+
+        // Function to hide the loader and reset the button
+        function hideLoader() {
+            getBtn.disabled = false;
+            getBtn.textContent = 'Get Image';
+        }
+
+        // Function to display messages (error or info)
+        function showMessage(text, type = 'error') {
+            resultContainer.innerHTML = `<div class="message ${type}">${text}</div>`;
+        }
+        
+        // Function to extract video ID from URL
+        function getYouTubeVideoId(url) {
+            const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        // Main function to process the request
+        async function processRequest() {
+            const url = urlInput.value.trim();
+            if (!url) {
+                showMessage('Please paste a YouTube URL first.', 'info');
+                return;
+            }
+
+            const videoId = getYouTubeVideoId(url);
+            if (!videoId) {
+                showMessage('Invalid YouTube URL. Please check the link and try again.');
+                return;
+            }
+
+            showLoader();
+
+            const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
+            // We create an image in memory to check if it exists before showing it
+            const image = new Image();
+            image.src = thumbnailUrl;
+
+            image.onload = () => {
+                hideLoader();
+                resultContainer.innerHTML = `
+                    <div class="thumbnail-card">
+                        <img id="thumbnailImage" src="${thumbnailUrl}" alt="YouTube Thumbnail">
+                        <a class="download-btn" data-url="${thumbnailUrl}" data-filename="${videoId}_thumbnail.jpg">
+                            Download HD Image
+                        </a>
+                    </div>
+                `;
+                // Make the card visible
+                document.querySelector('.thumbnail-card').style.display = 'block';
+            };
+            
+            image.onerror = () => {
+                // If max resolution fails, try high quality
+                const hqUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                image.src = hqUrl; // Try loading the HQ one
+                image.onload = () => { // If HQ works
+                     hideLoader();
+                     resultContainer.innerHTML = `
+                        <div class="thumbnail-card">
+                            <img id="thumbnailImage" src="${hqUrl}" alt="YouTube Thumbnail">
+                            <a class="download-btn" data-url="${hqUrl}" data-filename="${videoId}_thumbnail_hq.jpg">
+                                Download HQ Image
+                            </a>
+                        </div>
+                    `;
+                    document.querySelector('.thumbnail-card').style.display = 'block';
+                }
+                image.onerror = () => { // If both fail
+                    hideLoader();
+                    showMessage('Could not fetch thumbnail for this video. It might be private or deleted.');
+                }
+            };
+        }
+
+        // Function to handle direct download
+        async function handleDownload(target) {
+            const url = target.dataset.url;
+            const filename = target.dataset.filename;
+            
+            target.textContent = 'Downloading...';
+            target.style.backgroundColor = '#555';
+
+            try {
+                // Fetch the image as a blob
+                const response = await fetch(url);
+                const blob = await response.blob();
+
+                // Create a temporary link to trigger the download
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                
+                // Trigger the download and clean up
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+            } catch (error) {
+                console.error('Download failed:', error);
+                showMessage('Download failed. Please try again.');
+            } finally {
+                // Reset button text
+                target.textContent = 'Download HD Image';
+                target.style.backgroundColor = 'var(--success-color)';
+            }
+        }
+        
+        // Event Listeners
+        getBtn.addEventListener('click', processRequest);
+        
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                processRequest();
+            }
+        });
+
+        // Event delegation for the download button
+        resultContainer.addEventListener('click', (e) => {
+            if (e.target && e.target.classList.contains('download-btn')) {
+                handleDownload(e.target);
+            }
+        });
+    </script>
+
+</body>
+  </html>
